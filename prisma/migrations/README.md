@@ -83,6 +83,45 @@ WHERE migration_name = '20260601000000_add_display_name';
 
 ---
 
+## Rollback SQL Template
+
+Every migration PR must include a rollback script. Copy this block into the PR
+description (and optionally into a `rollback.sql` next to `migration.sql`,
+which Prisma ignores), then replace the placeholders. Test it on staging.
+
+```sql
+-- ============================================================
+-- Rollback for: <timestamp>_<migration_name>
+-- Reverses   : <one-line summary of what the migration did>
+-- Data loss? : <yes/no, and what is lost>
+-- ============================================================
+BEGIN;
+
+-- 1. Undo schema changes in REVERSE order of the forward migration.
+--    ADD COLUMN   -> ALTER TABLE "<table>" DROP COLUMN IF EXISTS "<column>";
+--    CREATE INDEX -> DROP INDEX IF EXISTS "<index_name>";
+--    CREATE TABLE -> DROP TABLE IF EXISTS "<table>";
+--    DROP COLUMN  -> ALTER TABLE "<table>" ADD COLUMN "<column>" <type>;
+--                    (restore values from backup)
+<inverse statements here>
+
+-- 2. Forget the migration so `prisma migrate deploy` can re-apply it later.
+DELETE FROM "_prisma_migrations"
+WHERE "migration_name" = '<timestamp>_<migration_name>';
+
+COMMIT;
+```
+
+Notes:
+
+- `DROP INDEX CONCURRENTLY` cannot run inside a transaction. Drop the
+  `BEGIN`/`COMMIT` lines when rolling back concurrent index builds.
+- Destructive forward migrations (drop column/table) can only be rolled back
+  structurally. Restore the data from the backup taken before deploy.
+- Never use `prisma migrate reset` in production.
+
+---
+
 ## Data Backfill Guidance
 
 Backfills that touch millions of rows must be batched to avoid long locks and

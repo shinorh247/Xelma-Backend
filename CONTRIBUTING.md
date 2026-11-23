@@ -110,6 +110,16 @@ Prisma is the single database ORM and migration tool. The schema lives in
 and apply migrations, or use `npm run prisma:migrate` when changing the schema.
 See the README "Migration story" section for more detail.
 
+### Migration PR checklist
+
+If your PR adds or changes anything under `prisma/migrations/`:
+
+- [ ] Rollback SQL is included in the PR description, using the
+      [Rollback SQL Template](prisma/migrations/README.md#rollback-sql-template).
+- [ ] The rollback was tested on a staging database.
+- [ ] The rest of the [migration safety checklist](prisma/migrations/README.md)
+      is complete.
+
 ## Keeping the repo root clean
 
 Accidental empty files at the repo root (e.g. `src*.ts` leftovers from misplacing
